@@ -38,7 +38,7 @@ def main():
                 search_terms = input("Name the search terms: ")
                 info = proxy.query_wikipedia(search_terms)
                 print(info)
-                answer = input("Do you want to append these links under a topic (y/n)?")
+                answer = input("Do you want to append these links under a topic (y/n)? ")
                 if answer == "y":
                     print(proxy.create_note(new_note(0, info)))
                 print()

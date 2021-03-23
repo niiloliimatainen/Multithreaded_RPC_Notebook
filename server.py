@@ -16,7 +16,7 @@ import time
 import requests
 
  
-# Creating threading version from the SimpleXMLRPCServer,which creates a new thread to handle each request.
+# Creating threading version from the SimpleXMLRPCServer, which creates a new thread to handle each request.
 class ThreadedSimpleXMLRPCServer (socketserver.ThreadingMixIn, SimpleXMLRPCServer):
     pass
 
@@ -46,27 +46,30 @@ def start_server():
                 try:
                     tree = ET.parse("db.xml")
                     root = tree.getroot()
+                    topic_exists = 0
                     for child in root:
-                        # If topic exists, append, else create a new topic
+                        # Find out if topic already exists
                         if child.attrib["name"] == json_object["topic"]:
+                            # Find out if note name is already taken
                             for note in child.findall("note"):
                                 if note.get("name") == json_object["note_name"]:
-                                    print("Hä")
                                     return "Note's name is already taken!"
-                            print("Mitää")
                             new_note = ET.SubElement(child, "note")
                             new_note.set("name", json_object["note_name"])
-                        else:
-                            new_topic = ET.SubElement(root, "topic")
-                            new_topic.set("name", json_object["topic"])
-                            new_note = ET.SubElement(new_topic, "note")
-                            new_note.set("name", json_object["note_name"])
-                        text = ET.SubElement(new_note, "text")
-                        text.text = json_object["text"]
-                        timestamp = ET.SubElement(new_note, "timestamp")
-                        timestamp.text = json_object["timestamp"]
-                        tree.write("db.xml")
-                        return "Note created!"
+                            topic_exists = 1
+                    # If new topic, create it
+                    if not topic_exists:
+                        new_topic = ET.SubElement(root, "topic")
+                        new_topic.set("name", json_object["topic"]) 
+                        new_note = ET.SubElement(new_topic, "note")
+                        new_note.set("name", json_object["note_name"])
+
+                    text = ET.SubElement(new_note, "text")
+                    text.text = json_object["text"]
+                    timestamp = ET.SubElement(new_note, "timestamp")
+                    timestamp.text = json_object["timestamp"]
+                    tree.write("db.xml")
+                    return "Note created!"
                 except:
                     return "Error happened, try again later!"
 
@@ -102,7 +105,6 @@ def start_server():
                     r = requests.get(url=URL, params=PARAMS)
                     data = r.json()
                     data = f"Page titles and links:\n   {data[1]}\n   {data[3]}"
-                    print(data)
                     return data
                 except:
                     return "Error happened, try again later!"
